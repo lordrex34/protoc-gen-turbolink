@@ -17,40 +17,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) Setup .NET SDK (needed for T4 CLI)
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 7.0.x
-
-      # 3) Install T4 CLI globally
-      - name: Install dotnet-t4 CLI
-        run: dotnet tool install --global dotnet-t4-cli
-
-      # 4) Transform T4 templates (.tt) into .cs
-      - name: Transform T4 templates
-        run: |
-          echo "Transforming all T4 templates..."
-          set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
-          for %%f in (protoc-gen-turbolink\Template\*.tt) do dotnet-t4 "%%f"
-
-      # 5) Setup NuGet
+      # 2) Setup NuGet
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1
 
-      # 6) Restore NuGet packages
+      # 3) Restore NuGet packages
       - name: Restore NuGet packages
         run: nuget restore protoc-gen-turbolink.sln
 
-      # 7) Setup MSBuild
+      # 4) Transform T4 templates (.tt) into .cs using TextTransform.exe
+      - name: Transform T4 templates
+        run: |
+          echo "Transforming all T4 templates..."
+          setlocal enabledelayedexpansion
+          set TEXTTRANSFORM="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\TextTransform.exe"
+          for %%f in (protoc-gen-turbolink\Template\*.tt) do (
+            echo "Processing %%f..."
+            %TEXTTRANSFORM% "%%f"
+          )
+
+      # 5) Setup MSBuild
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
 
-      # 8) Build project in Release mode
+      # 6) Build project in Release mode
       - name: Compile with MSBuild
         run: msbuild protoc-gen-turbolink.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # 9) Upload build artifacts
+      # 7) Upload build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
