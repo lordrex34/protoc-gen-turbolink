@@ -1,6 +1,5 @@
 name: Build protoc-gen-turbolink
 
-# Trigger on pushes to main and PRs
 on:
   push:
     branches:
@@ -18,23 +17,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) Setup NuGet (restore dependencies)
+      # 2) Setup NuGet
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1
 
       - name: Restore NuGet packages
         run: nuget restore protoc-gen-turbolink.sln
 
-      # 3) Build with MSBuild
-      - name: Build (Release)
+      # 3) Setup MSBuild
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
+
+      # 4) Build with MSBuild
       - name: Compile with MSBuild
         run: |
           msbuild protoc-gen-turbolink.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # 4) Collect built binary
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      # 5) Upload compiled binary
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: protoc-gen-turbolink
           path: |
