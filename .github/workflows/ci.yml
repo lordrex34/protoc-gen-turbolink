@@ -1,0 +1,42 @@
+name: Build protoc-gen-turbolink
+
+# Trigger on pushes to main and PRs
+on:
+  push:
+    branches:
+      - main
+      - "refs/tags/*"
+  pull_request:
+
+jobs:
+  build:
+    name: Build protoc-gen-turbolink
+    runs-on: windows-latest
+
+    steps:
+      # 1) Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) Setup NuGet (restore dependencies)
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1
+
+      - name: Restore NuGet packages
+        run: nuget restore protoc-gen-turbolink.sln
+
+      # 3) Build with MSBuild
+      - name: Build (Release)
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Compile with MSBuild
+        run: |
+          msbuild protoc-gen-turbolink.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+      # 4) Collect built binary
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: protoc-gen-turbolink
+          path: |
+            **/bin/Release/protoc-gen-turbolink.exe
+            **/bin/Release/*.dll
