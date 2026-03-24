@@ -25,14 +25,14 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore protoc-gen-turbolink.sln
 
-      # 4) Transform T4 templates (.tt) into .cs using TextTransform.exe
+      # 4) Transform T4 templates using CMD (IMPORTANT)
       - name: Transform T4 templates
+        shell: cmd
         run: |
-          echo "Transforming all T4 templates..."
-          setlocal enabledelayedexpansion
+          echo Transforming all T4 templates...
           set TEXTTRANSFORM="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\TextTransform.exe"
           for %%f in (protoc-gen-turbolink\Template\*.tt) do (
-            echo "Processing %%f..."
+            echo Processing %%f...
             %TEXTTRANSFORM% "%%f"
           )
 
@@ -40,11 +40,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
 
-      # 6) Build project in Release mode
+      # 6) Build project
       - name: Compile with MSBuild
         run: msbuild protoc-gen-turbolink.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # 7) Upload build artifacts
+      # 7) Upload artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
